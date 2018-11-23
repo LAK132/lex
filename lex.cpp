@@ -136,7 +136,7 @@ namespace lex
     using std::unordered_map;
     using std::isspace;
 
-    static std::locale loc;
+    static std::locale loc = std::locale("C");
     enum token_type { END, USER, KEYWORD, SYMBOL };
     static lak::suffix_trie_t<token_type> tokens;
     struct token_t { token_type type; string value; };
@@ -158,13 +158,13 @@ namespace lex
 
     static inline bool is_symbol(char c)
     {
-        return !(is_letter(c) || is_number(c) || isspace(static_cast<unsigned char>(c), loc));
+        return !(is_letter(c) || is_number(c) || isspace(c, loc));
     }
 
     static inline bool hit_word_boundry(char c1, char c2)
     {
         if (c1 == 0) return false;
-        if (isspace(static_cast<unsigned char>(c2), loc)) return true;
+        if (isspace(c2, loc)) return true;
         if (is_alphanumeric(c1) != is_alphanumeric(c2)) return true;
         return false;
     }
@@ -173,10 +173,9 @@ namespace lex
     {
         string str = "";
         token_t rtn = { END, "" };
-        while (strm.good() && isspace(static_cast<unsigned char>(strm.peek()), loc)) strm.get(); // skip whitespace
+        while (strm.good() && isspace((char)strm.peek(), loc)) strm.get(); // skip whitespace
         for (char p = 0, c = strm.get(); strm.good(); c = strm.get())
         {
-            str += c;
             if (hit_word_boundry(p, c))
             {
                 // reached the end of the token
@@ -195,6 +194,7 @@ namespace lex
                     break;
                 }
             }
+            str += c;
             p = c;
         }
         if (strm.good())
@@ -211,7 +211,7 @@ using std::string;
 int main()
 {
     string filename;
-    cin >> filename;
+    std::getline(cin, filename);
     if (ifstream strm(filename, ifstream::in | ifstream::binary); strm.is_open())
     {
         for (lex::token_t t = lex::next_token(strm); t.type != lex::token_type::END; t = lex::next_token(strm))
