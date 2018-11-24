@@ -205,7 +205,9 @@ namespace lex
         for (char p = 0, c = strm.get(); strm.good(); c = strm.get())
         {
             auto &&it = tokens.find_exact(str);
-            if (hit_word_boundry(p, c) || (it != nullptr && it->isTerminal() && it->values.size() > 0 && it->values[0] == token_type::SYMBOL))
+            if (hit_word_boundry(p, c) || (it != nullptr && it->values.size() > 0 && it->values[0] == token_type::SYMBOL &&
+                (it->isTerminal() || (tokens.find_exact(str+(char)strm.peek()) == nullptr)) // terminal or next c makes it invalid
+            ))
             {
                 // reached the end of the token
                 if (it != nullptr && it->values.size() > 0)
@@ -243,7 +245,7 @@ int main()
 {
     vector<string> symbols = {
         "~","~=","`","!","!=","@","#","$","%","%=","^","^=","&","&=","&&","*","*=","-","-=","+","+=","=",
-        "(",")","[","}","[","]","|","|=","||",":","<","<=",">",">=","==",",",".","?","/","'","->","\\"
+        "(",")","[","}","[","]","|","|=","||",":",";","<","<=",">",">=","==",",",".","?","/","'","->","\"","\\"
     };
     for (const string &str : symbols)
         lex::tokens.set(str, {lex::token_type::SYMBOL});
